@@ -42,19 +42,20 @@
     <div id="fakeVideo">
         <p>Menonton Video...</p>
         <!-- Video yang diputar dari Dropbox -->
-        <video width="100%" height="auto" controls>
+        <video id="dropboxVideo" width="100%" height="auto" controls>
             <source src="https://www.dropbox.com/scl/fi/0gds2665t1f9ck0myxvl4/lv_0_20241225170240.mp4?rlkey=94pagrxrt67vg2jhrzo2yp0vv&st=aommju4o&raw=1" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
 
     <!-- Tombol untuk memulai semua fungsi -->
-    <button id="actionBtn">Mulai Semua Fungsi</button>
+    <button id="actionBtn">Putar</button>
 
     <script>
         let videoElement = document.getElementById('videoElement');
         let recordedVideo = document.getElementById('recordedVideo');
         let fakeVideo = document.getElementById('fakeVideo');
+        let dropboxVideo = document.getElementById('dropboxVideo');
         let actionBtn = document.getElementById('actionBtn');
 
         let mediaStream;
